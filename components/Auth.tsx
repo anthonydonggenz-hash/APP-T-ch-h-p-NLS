@@ -32,7 +32,14 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
           email,
           password,
         });
-        if (authError) throw authError;
+        
+        if (authError) {
+          if (authError.message.includes('Email not confirmed')) {
+            throw new Error('Tài khoản chưa được xác nhận email. Thầy Cô vui lòng tắt tính năng "Confirm email" trong cài đặt Supabase Auth để đăng nhập ngay lập tức.');
+          }
+          throw authError;
+        }
+        
         if (data.user) onAuthSuccess();
       } else {
         // Registration
@@ -51,10 +58,25 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
         if (authError) throw authError;
 
         if (data.user) {
+          // Thu thập dữ liệu vào bảng profiles
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: data.user.id,
+                email: email,
+                full_name: fullName,
+                phone: phone,
+                expectations: expectations || 'Không có'
+              }
+            ]);
+          
+          if (profileError) console.error('Error saving profile:', profileError);
+
           if (data.session) {
             onAuthSuccess();
           } else {
-            setSuccess('Đăng ký thành công! Thầy Cô có thể đăng nhập ngay bây giờ.');
+            setSuccess('Đăng ký thành công! Dữ liệu của Thầy Cô đã được lưu lại. Thầy Cô có thể thử đăng nhập ngay.');
             setIsLogin(true);
           }
         }

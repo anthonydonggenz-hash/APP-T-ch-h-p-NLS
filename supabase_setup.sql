@@ -37,16 +37,35 @@ insert into storage.buckets (id, name, public)
 values ('documents', 'documents', true)
 on conflict (id) do nothing;
 
--- 4. Cấu hình Policy cho Storage (Bucket 'documents')
-create policy "Public Access Documents"
-on storage.objects for select
-using ( bucket_id = 'documents' );
+-- 5. Tạo bảng lưu trữ thông tin người dùng (Profiles) để thu thập dữ liệu
+create table if not exists profiles (
+  id uuid references auth.users on delete cascade primary key,
+  email text unique not null,
+  full_name text,
+  phone text,
+  expectations text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 
-create policy "Public Upload Documents"
-on storage.objects for insert
-with check ( bucket_id = 'documents' );
+alter table profiles enable row level security;
 
-create policy "Authenticated Delete Documents"
-on storage.objects for delete
+-- Cho phép người dùng xem thông tin của chính mình
+create policy "Users can view own profile"
+on profiles for select
+using (auth.uid() = id);
+
+-- Cho phép người dùng cập nhật thông tin của chính mình
+create policy "Users can update own profile"
+on profiles for update
+using (auth.uid() = id);
+
+-- Cho phép hệ thống (hoặc người dùng mới) tạo profile
+create policy "Enable insert for all users"
+on profiles for insert
+with check (true);
+
+-- Cho phép Admin xem tất cả profile (nếu cần)
+create policy "Admin can view all profiles"
+on profiles for select
 to authenticated
-using ( bucket_id = 'documents' );
+using (auth.jwt() ->> 'email' = 'anthonydong.genz@gmail.com');

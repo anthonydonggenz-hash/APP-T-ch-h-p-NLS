@@ -278,7 +278,7 @@ const App = () => {
   };
 
   const handleAuthSuccess = () => {
-    setCurrentMode('home');
+    setCurrentMode('create_input');
     setShowApiKeyModal(true);
   };
 
@@ -566,8 +566,8 @@ const App = () => {
     );
   }
 
-  if (!user) {
-    return <Auth onAuthSuccess={handleAuthSuccess} onBack={() => {}} />;
+  if (!user && currentMode !== 'home' && currentMode !== 'api_guide') {
+    return <Auth onAuthSuccess={handleAuthSuccess} onBack={() => setCurrentMode('home')} />;
   }
 
   if (currentMode === 'admin_dashboard' && user && user.email === 'anthonydong.genz@gmail.com') {
@@ -787,7 +787,7 @@ const App = () => {
                     </h1>
                     <p className="text-xl md:text-2xl font-serif font-bold text-slate-600 mb-10 tracking-wide">Cùng thầy Trần Đông</p>
                     <div className="flex gap-6 mt-4">
-                        <button onClick={() => setCurrentMode('create_input')} className="px-8 py-4 rounded-xl bg-gradient-to-br from-gold-accent to-gold-primary text-white font-bold shadow-lg flex items-center gap-2 text-lg hover:brightness-110 active:scale-95 transition-all">
+                        <button onClick={() => user ? setCurrentMode('create_input') : setCurrentMode('auth')} className="px-8 py-4 rounded-xl bg-gradient-to-br from-gold-accent to-gold-primary text-white font-bold shadow-lg flex items-center gap-2 text-lg hover:brightness-110 active:scale-95 transition-all">
                             <Sparkles size={20}/> Bắt đầu ngay
                         </button>
                     </div>

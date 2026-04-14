@@ -51,8 +51,12 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
         if (authError) throw authError;
 
         if (data.user) {
-          setSuccess('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản (nếu có) hoặc đăng nhập ngay.');
-          setIsLogin(true);
+          if (data.session) {
+            onAuthSuccess();
+          } else {
+            setSuccess('Đăng ký thành công! Thầy Cô có thể đăng nhập ngay bây giờ.');
+            setIsLogin(true);
+          }
         }
       }
     } catch (err: any) {

@@ -43,7 +43,7 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
             data: {
               full_name: fullName,
               phone: phone,
-              expectations: expectations,
+              expectations: expectations || 'Không có',
             }
           }
         });
@@ -100,17 +100,17 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
               </div>
             )}
 
-            <form onSubmit={handleAuth} className="space-y-4">
+            <form onSubmit={handleAuth} className={isLogin ? "space-y-4" : "space-y-3"}>
               {!isLogin && (
-                <>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Họ và tên <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Họ và tên <span className="text-red-500">*</span></label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                       <input 
                         type="text" 
                         required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-sm" 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-xs" 
                         placeholder="Nguyễn Văn A"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
@@ -119,30 +119,30 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Số điện thoại <span className="text-red-500">*</span></label>
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Số điện thoại <span className="text-red-500">*</span></label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                       <input 
                         type="tel" 
                         required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-sm" 
-                        placeholder="09xx xxx xxx"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-xs" 
+                        placeholder="09xx..."
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                       />
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Email <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Email <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                   <input 
                     type="email" 
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-sm" 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-xs" 
                     placeholder="thayco@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -151,14 +151,14 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Mật khẩu <span className="text-red-500">*</span></label>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Mật khẩu <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                   <input 
                     type="password" 
                     required
                     minLength={6}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-sm" 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-xs" 
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -168,13 +168,12 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
 
               {!isLogin && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Mong muốn của Thầy Cô khi ứng dụng AI <span className="text-red-500">*</span></label>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-1">Mong muốn ứng dụng AI (Không bắt buộc)</label>
                   <div className="relative">
-                    <MessageSquare className="absolute left-3 top-3 text-slate-400" size={18} />
+                    <MessageSquare className="absolute left-3 top-2.5 text-slate-400" size={14} />
                     <textarea 
-                      required
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-sm min-h-[100px]" 
-                      placeholder="Ví dụ: Tiết kiệm thời gian soạn bài, tạo bài tập sáng tạo..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 focus:outline-none focus:border-gold-accent focus:ring-1 focus:ring-gold-accent/20 transition-all text-xs min-h-[60px]" 
+                      placeholder="Ví dụ: Tiết kiệm thời gian soạn bài..."
                       value={expectations}
                       onChange={(e) => setExpectations(e.target.value)}
                     />
@@ -185,9 +184,9 @@ const Auth: React.FC<Props> = ({ onAuthSuccess, onBack }) => {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full py-4 rounded-xl bg-gradient-to-br from-gold-accent to-gold-primary text-white font-bold shadow-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4"
+                className="w-full py-3 rounded-xl bg-gradient-to-br from-gold-accent to-gold-primary text-white font-bold shadow-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
               >
-                {loading ? <RefreshCw size={20} className="animate-spin" /> : (isLogin ? 'Đăng nhập ngay' : 'Đăng ký tài khoản')}
+                {loading ? <RefreshCw size={18} className="animate-spin" /> : (isLogin ? 'Đăng nhập ngay' : 'Đăng ký tài khoản')}
               </button>
             </form>
 

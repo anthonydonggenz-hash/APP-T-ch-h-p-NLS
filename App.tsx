@@ -41,6 +41,8 @@ const App = () => {
   const [auditResult, setAuditResult] = useState<{score: number; issues: any[]} | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [apiKey, setApiKey] = useState<string>('');
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
@@ -70,6 +72,9 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setIsAuthLoading(false);
+      if (session?.user && !apiKey) {
+        setShowApiKeyModal(true);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -181,7 +186,7 @@ const App = () => {
 
   const handleExportJson = () => {
     if (!resultData) {
-      alert("Chưa có dữ liệu để xuất!");
+      setNotification({ message: "Chưa có dữ liệu để xuất!", type: 'error' });
       return;
     }
     const exportData = {
@@ -212,10 +217,10 @@ const App = () => {
           setResultData(json.resultData);
           setCurrentMode('result');
         }
-        alert("Nhập dữ liệu thành công!");
+        setNotification({ message: "Nhập dữ liệu thành công!", type: 'success' });
       } catch (err) {
         console.error("Lỗi nhập JSON:", err);
-        alert("File JSON không hợp lệ hoặc cấu trúc sai.");
+        setNotification({ message: "File JSON không hợp lệ hoặc cấu trúc sai.", type: 'error' });
       }
     };
     reader.readAsText(file);
@@ -247,7 +252,7 @@ const App = () => {
 
   const handleAiSuggest = () => {
       if (!formData.topic || !formData.subject) {
-          alert("Vui lòng nhập Môn học và Tên bài dạy trước để AI gợi ý nội dung!");
+          setNotification({ message: "Vui lòng nhập Môn học và Tên bài dạy trước để AI gợi ý nội dung!", type: 'error' });
           return;
       }
       setIsSuggesting(true);
@@ -274,10 +279,13 @@ const App = () => {
 
   const handleAuthSuccess = () => {
     setCurrentMode('home');
+    setShowApiKeyModal(true);
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setApiKey('');
+    setShowApiKeyModal(false);
     setCurrentMode('home');
   };
   
@@ -568,6 +576,53 @@ const App = () => {
 
   return (
     <div className="flex h-screen w-full bg-premium">
+      {/* API Key Modal */}
+      {showApiKeyModal && user && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in border border-gold-accent/20">
+            <div className="w-16 h-16 rounded-2xl bg-gold-light text-gold-accent flex items-center justify-center mx-auto mb-6">
+              <Key size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 text-center mb-2">Nhập API Key của Thầy Cô</h3>
+            <p className="text-slate-500 text-center text-sm mb-6">Để sử dụng các tính năng AI, vui lòng nhập mã API Key Gemini của Thầy Cô.</p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-2">Gemini API Key</label>
+                <input 
+                  type="password"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-accent transition-all text-sm"
+                  placeholder="Dán API Key vào đây..."
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                />
+              </div>
+              
+              <button 
+                onClick={() => {
+                  if (apiKey.trim()) {
+                    setShowApiKeyModal(false);
+                    setNotification({ message: 'Đã thiết lập API Key thành công!', type: 'success' });
+                  } else {
+                    setNotification({ message: 'Vui lòng nhập API Key!', type: 'error' });
+                  }
+                }}
+                className="w-full py-4 rounded-xl bg-gradient-to-br from-gold-accent to-gold-primary text-white font-bold shadow-lg hover:brightness-110 transition-all"
+              >
+                Xác nhận & Bắt đầu
+              </button>
+              
+              <button 
+                onClick={() => setCurrentMode('api_guide')}
+                className="w-full text-xs text-gold-dark font-bold hover:underline"
+              >
+                Thầy Cô chưa có API Key? Xem hướng dẫn tại đây
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Notification Toast */}
       {notification && (
         <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl animate-slide-up border ${

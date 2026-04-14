@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Wand2, Sparkles, Layers, CheckCircle, File as FileIcon, User, 
   Edit3, RefreshCw, Settings, Upload, Bot, FileText, X, Brain, Save, Key, ArrowRight, Download, FileJson,
-  Facebook, Phone, MessageCircle, Users as UsersIcon, AlertCircle
+  Facebook, Phone, MessageCircle, Users as UsersIcon, AlertCircle, ExternalLink
 } from 'lucide-react';
 import LessonPlan5512View from './components/LessonPlan5512View';
 import WorksheetView from './components/WorksheetView';
@@ -41,8 +41,6 @@ const App = () => {
   const [auditResult, setAuditResult] = useState<{score: number; issues: any[]} | null>(null);
   const [user, setUser] = useState<any>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [apiKey, setApiKey] = useState<string>('');
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
@@ -72,9 +70,6 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setIsAuthLoading(false);
-      if (session?.user && !apiKey) {
-        setShowApiKeyModal(true);
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -279,13 +274,10 @@ const App = () => {
 
   const handleAuthSuccess = () => {
     setCurrentMode('create_input');
-    setShowApiKeyModal(true);
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setApiKey('');
-    setShowApiKeyModal(false);
     setCurrentMode('home');
   };
   
@@ -293,69 +285,6 @@ const App = () => {
   const handleSectionElaborate = (sectionId: string, userPrompt: string) => {};
 
   // --- RENDER SUB-VIEWS ---
-
-  const renderApiGuide = () => (
-    <div className="w-full max-w-4xl bg-white p-10 rounded-xl shadow-sm border border-gray-100 animate-fade-in mx-auto mt-6 mb-10">
-        <div className="flex items-center gap-4 mb-8 border-b border-gray-100 pb-6">
-            <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
-                <Key size={28}/>
-            </div>
-            <div>
-                <h2 className="text-2xl font-bold font-serif text-slate-800">Hướng dẫn lấy API Key</h2>
-                <p className="text-slate-500 text-sm italic">Để sử dụng công cụ ổn định và không giới hạn lượt dùng.</p>
-            </div>
-        </div>
-
-        <div className="space-y-8 text-slate-700 leading-relaxed">
-            <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gold-accent text-white flex items-center justify-center text-xs">1</span>
-                    Truy cập Google AI Studio
-                </h3>
-                <p className="pl-8">
-                    Truy cập vào trang web <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-gold-dark font-bold underline">Google AI Studio</a>. Đây là nền tảng miễn phí của Google để quản lý các khóa API cho mô hình Gemini.
-                </p>
-            </section>
-
-            <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gold-accent text-white flex items-center justify-center text-xs">2</span>
-                    Tạo API Key
-                </h3>
-                <p className="pl-8">
-                    Nhấn vào nút <span className="font-bold text-slate-900">"Create API key"</span>. Nếu bạn đã có Project trên Google Cloud, bạn có thể chọn project đó, hoặc chọn <span className="font-bold text-slate-900">"Create API key in new project"</span>.
-                </p>
-            </section>
-
-            <section>
-                <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-gold-accent text-white flex items-center justify-center text-xs">3</span>
-                    Sao chép và Cấu hình
-                </h3>
-                <p className="pl-8">
-                    Sau khi Key được tạo, hãy sao chép (Copy) nó. Quay lại ứng dụng này, nhấn vào biểu tượng <span className="font-bold text-slate-900">Cài đặt (Settings)</span> ở góc dưới bên trái màn hình AI Studio (ngoài khung ứng dụng này) để dán Key vào phần cấu hình.
-                </p>
-            </section>
-
-            <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                <p className="text-sm text-blue-800 font-medium flex items-center gap-2">
-                    <Bot size={18} /> Lưu ý quan trọng:
-                </p>
-                <ul className="list-disc pl-10 mt-3 text-sm text-blue-700 space-y-2">
-                    <li>API Key của Gemini hiện tại có gói <strong>miễn phí</strong> rất hào phóng.</li>
-                    <li>Không chia sẻ API Key của bạn cho người khác để đảm bảo bảo mật.</li>
-                    <li>Việc sử dụng API Key riêng giúp bạn tránh được tình trạng "Quá tải lượt dùng" khi dùng chung hệ thống.</li>
-                </ul>
-            </div>
-
-            <div className="flex justify-center pt-4">
-                <button onClick={() => setCurrentMode('create_input')} className="px-8 py-3 rounded-xl bg-gold-accent text-white font-bold shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
-                    <Sparkles size={18} /> Bắt đầu soạn bài ngay
-                </button>
-            </div>
-        </div>
-    </div>
-  );
 
   const renderInputForm = () => (
       <div className="w-full max-w-4xl bg-white p-10 rounded-xl shadow-sm border border-gray-100 animate-fade-in mx-auto mt-6 mb-10">
@@ -566,7 +495,7 @@ const App = () => {
     );
   }
 
-  if (!user && currentMode !== 'home' && currentMode !== 'api_guide') {
+  if (!user && currentMode !== 'home') {
     return <Auth onAuthSuccess={handleAuthSuccess} onBack={() => setCurrentMode('home')} />;
   }
 
@@ -576,53 +505,6 @@ const App = () => {
 
   return (
     <div className="flex h-screen w-full bg-premium">
-      {/* API Key Modal */}
-      {showApiKeyModal && user && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in border border-gold-accent/20">
-            <div className="w-16 h-16 rounded-2xl bg-gold-light text-gold-accent flex items-center justify-center mx-auto mb-6">
-              <Key size={32} />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 text-center mb-2">Nhập API Key của Thầy Cô</h3>
-            <p className="text-slate-500 text-center text-sm mb-6">Để sử dụng các tính năng AI, vui lòng nhập mã API Key Gemini của Thầy Cô.</p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-widest mb-2">Gemini API Key</label>
-                <input 
-                  type="password"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-accent transition-all text-sm"
-                  placeholder="Dán API Key vào đây..."
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                />
-              </div>
-              
-              <button 
-                onClick={() => {
-                  if (apiKey.trim()) {
-                    setShowApiKeyModal(false);
-                    setNotification({ message: 'Đã thiết lập API Key thành công!', type: 'success' });
-                  } else {
-                    setNotification({ message: 'Vui lòng nhập API Key!', type: 'error' });
-                  }
-                }}
-                className="w-full py-4 rounded-xl bg-gradient-to-br from-gold-accent to-gold-primary text-white font-bold shadow-lg hover:brightness-110 transition-all"
-              >
-                Xác nhận & Bắt đầu
-              </button>
-              
-              <button 
-                onClick={() => setCurrentMode('api_guide')}
-                className="w-full text-xs text-gold-dark font-bold hover:underline"
-              >
-                Thầy Cô chưa có API Key? Xem hướng dẫn tại đây
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Notification Toast */}
       {notification && (
         <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl animate-slide-up border ${
@@ -667,9 +549,6 @@ const App = () => {
             <nav className="flex flex-col gap-1 mb-8">
                 <div onClick={() => setCurrentMode('create_input')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all ${currentMode === 'create_input' ? 'bg-white/10 text-gold-accent border border-gold-accent/30' : 'hover:bg-white/5 hover:text-white'}`}>
                     <Sparkles size={18} /> <span className="text-sm font-medium">Soạn bài mới</span>
-                </div>
-                <div onClick={() => setCurrentMode('api_guide')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all ${currentMode === 'api_guide' ? 'bg-white/10 text-gold-accent border border-gold-accent/30' : 'hover:bg-white/5 hover:text-white'}`}>
-                    <Key size={18} /> <span className="text-sm font-medium">Hướng dẫn lấy API Key</span>
                 </div>
                 {user?.email === 'anthonydong.genz@gmail.com' && (
                   <div onClick={() => setCurrentMode('admin_dashboard')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all ${currentMode === 'admin_dashboard' ? 'bg-white/10 text-gold-accent border border-gold-accent/30' : 'hover:bg-white/5 hover:text-white'}`}>
@@ -791,12 +670,6 @@ const App = () => {
                             <Sparkles size={20}/> Bắt đầu ngay
                         </button>
                     </div>
-                </div>
-            )}
-
-            {currentMode === 'api_guide' && (
-                <div className="flex justify-center pt-10">
-                    {renderApiGuide()}
                 </div>
             )}
 

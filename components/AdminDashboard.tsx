@@ -15,6 +15,8 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState<'plans' | 'documents' | 'competencies'>('plans');
   const [plans, setPlans] = useState<LessonPlanRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [stats, setStats] = useState({
     totalPlans: 0,
     totalDocs: 0,
@@ -43,6 +45,11 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
   useEffect(() => {
     fetchData();
 
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+
     // Set up real-time subscription for automatic data refresh
     const subscription = supabase
       .channel('lesson_plans_changes')
@@ -60,8 +67,7 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
   }, []);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa giáo án này?')) return;
-    
+    setConfirmDelete(null);
     try {
       const { error } = await supabase
         .from('lesson_plans')
@@ -69,15 +75,53 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
         .eq('id', id);
 
       if (error) throw error;
+      setNotification({ message: 'Đã xóa giáo án thành công!', type: 'success' });
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting:', err);
-      alert('Không thể xóa giáo án.');
+      setNotification({ message: `Không thể xóa: ${err.message}`, type: 'error' });
     }
   };
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
+    <div className="flex h-screen w-full bg-slate-50 overflow-hidden relative">
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl animate-slide-up border ${
+          notification.type === 'success' ? 'bg-white border-green-100 text-green-600' : 'bg-white border-red-100 text-red-600'
+        }`}>
+          {notification.type === 'success' ? <CheckCircle size={20} /> : <Clock size={20} />}
+          <p className="text-sm font-bold">{notification.message}</p>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 animate-fade-in">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-6">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 text-center mb-2">Xác nhận xóa?</h3>
+            <p className="text-slate-500 text-center text-sm mb-8">Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa giáo án này?</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all"
+              >
+                Hủy
+              </button>
+              <button 
+                onClick={() => handleDelete(confirmDelete)}
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
+              >
+                Xóa ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col">
         <div className="p-6 border-b border-slate-800">
@@ -235,7 +279,7 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
                               <ExternalLink size={16} />
                             </button>
                             <button 
-                              onClick={() => handleDelete(plan.id)}
+                              onClick={() => setConfirmDelete(plan.id)}
                               className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                             >
                               <Trash2 size={16} />

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Wand2, Sparkles, Layers, CheckCircle, File as FileIcon, User, 
   Edit3, RefreshCw, Settings, Upload, Bot, FileText, X, Brain, Save, Key, ArrowRight, Download, FileJson,
-  Facebook, Phone, MessageCircle, Users as UsersIcon
+  Facebook, Phone, MessageCircle, Users as UsersIcon, AlertCircle
 } from 'lucide-react';
 import LessonPlan5512View from './components/LessonPlan5512View';
 import WorksheetView from './components/WorksheetView';
@@ -43,6 +43,15 @@ const App = () => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  // Auto-hide notification
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   // Refs for file inputs
   const textbookInputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +86,7 @@ const App = () => {
 
       if (error) {
         console.error('Upload error:', error);
-        alert(`Lỗi tải file: ${error.message}`);
+        setNotification({ message: `Lỗi tải file: ${error.message}`, type: 'error' });
         return null;
       }
 
@@ -106,18 +115,18 @@ const App = () => {
         ]);
 
         if (error) throw error;
-        alert("Đã lưu giáo án vào CSDL thành công!");
+        setNotification({ message: "Đã lưu giáo án vào CSDL thành công!", type: 'success' });
     } catch (error: any) {
         console.error("Lỗi lưu CSDL:", error);
-        alert(`Không thể lưu: ${error.message}`);
+        setNotification({ message: `Không thể lưu: ${error.message}`, type: 'error' });
     }
   };
 
   // --- HANDLERS ---
   const handleGenerate = async () => {
-    if (!formData.subject.trim()) { alert("Vui lòng điền tên Môn học!"); return; }
-    if (!formData.grade) { alert("Vui lòng chọn Lớp học!"); return; }
-    if (!formData.topic.trim()) { alert("Vui lòng điền Tên bài dạy / Chủ đề!"); return; }
+    if (!formData.subject.trim()) { setNotification({ message: "Vui lòng điền tên Môn học!", type: 'error' }); return; }
+    if (!formData.grade) { setNotification({ message: "Vui lòng chọn Lớp học!", type: 'error' }); return; }
+    if (!formData.topic.trim()) { setNotification({ message: "Vui lòng điền Tên bài dạy / Chủ đề!", type: 'error' }); return; }
 
     setCurrentMode('loading');
     
@@ -559,6 +568,15 @@ const App = () => {
 
   return (
     <div className="flex h-screen w-full bg-premium">
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl animate-slide-up border ${
+          notification.type === 'success' ? 'bg-white border-green-100 text-green-600' : 'bg-white border-red-100 text-red-600'
+        }`}>
+          {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+          <p className="text-sm font-bold">{notification.message}</p>
+        </div>
+      )}
       
       {/* SIDEBAR */}
       <aside className="w-72 h-full flex flex-col bg-sidebar z-20 text-slate-300 shadow-xl border-r border-gold-accent/20">

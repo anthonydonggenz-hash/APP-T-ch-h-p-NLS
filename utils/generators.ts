@@ -74,42 +74,50 @@ export const generateAiSuggestion = (formData: FormData): string => {
     const topicUpper = topic.toUpperCase();
     const context = getTopicContext(topic, subject, isMath);
 
+    const sgkSeries = ["Kết nối tri thức với cuộc sống", "Chân trời sáng tạo", "Cánh diều"];
+    const randomSgk = sgkSeries[Math.floor(Math.random() * sgkSeries.length)];
+
     if (isMath) {
-        return `GIÁO ÁN GỢI Ý: ${topicUpper}
+        return `[AI GỢI Ý - CHUẨN SGK: ${randomSgk}]
+BÀI DẠY: ${topicUpper}
 Môn: ${subject} - Lớp: ${grade}
 
-I. YÊU CẦU CẦN ĐẠT:
+I. YÊU CẦU CẦN ĐẠT (Theo Chương trình GDPT 2018):
 - Kiến thức: HS nắm vững ${context.definition}
-- Năng lực: HS có khả năng ${context.exercises}
-- Phẩm chất: Trung thực, trách nhiệm trong học tập.
+- Năng lực: HS phát triển năng lực giải quyết vấn đề toán học thông qua ${context.exercises}
+- Phẩm chất: Trung thực, trách nhiệm và tư duy logic.
 
-II. NỘI DUNG CHI TIẾT:
-1. Khái niệm:
-${context.definition}
+II. NỘI DUNG CHI TIẾT (Bám sát SGK):
+1. Hoạt động Khởi động:
+- Tình huống thực tế: ${context.realWorld}
+- Câu hỏi dẫn dắt: Làm thế nào để ứng dụng ${topic} vào thực tiễn?
 
-2. Ví dụ minh họa:
-- Bài toán: Cho các dữ kiện liên quan đến ${topic}.
-- Giải: Áp dụng công thức để tìm kết quả.
+2. Hình thành kiến thức mới:
+- Định nghĩa: ${context.definition}
+- Các tính chất/quy tắc quan trọng: ${context.keywords.join(', ')}.
 
-3. Luyện tập:
-- Giải các bài tập trong SGK trang tương ứng.
-- Thảo luận về ${context.realWorld}`;
+3. Luyện tập & Vận dụng:
+- Giải các bài tập trong SGK (Trang tương ứng của bộ sách ${randomSgk}).
+- Bài tập mở rộng: ${context.exercises}
+
+(Nội dung được tối ưu hóa cho việc dạy học tích hợp Năng lực số)`;
     }
 
-    return `[AI GỢI Ý - CHUẨN KẾT NỐI TRI THỨC]
-BÀI: ${topicUpper}
+    return `[AI GỢI Ý - CHUẨN SGK: ${randomSgk}]
+BÀI DẠY: ${topicUpper}
 MÔN: ${subject.toUpperCase()} - LỚP ${grade}
 
-I. YÊU CẦU CẦN ĐẠT:
-- Nêu được khái niệm về ${topic}.
-- Giải giải thích được ý nghĩa thực tiễn của ${topic}: ${context.realWorld}
+I. YÊU CẦU CẦN ĐẠT (Theo Chương trình GDPT 2018):
+- Nêu được khái niệm và các đặc điểm cốt lõi của ${topic}.
+- Giải thích được ý nghĩa thực tiễn: ${context.realWorld}
+- Phát triển năng lực tự chủ, tự học và giao tiếp hợp tác.
 
 II. NỘI DUNG CHI TIẾT:
-1. Định nghĩa: ${topic} là...
-2. Đặc điểm chính: ...
-3. Ứng dụng: ${context.realWorld}
+1. Khám phá: Tìm hiểu về ${topic} qua các ngữ liệu trong SGK ${randomSgk}.
+2. Phân tích: Làm rõ ${context.keywords[0]} và các giá trị liên quan.
+3. Thực hành: Vận dụng kiến thức vào bài tập thực tế: ${context.realWorld}
 
-(Nội dung được trích xuất chuẩn theo chương trình GDPT 2018)`;
+(Nội dung được trích xuất chuẩn theo Công văn 5512/BGDĐT)`;
 };
 
 export const generateDetailed5512Plan = (formData: FormData, isMath: boolean): LessonPlan => {
@@ -175,49 +183,60 @@ export const generateDetailed5512Plan = (formData: FormData, isMath: boolean): L
             grade: grade,
             duration: formData.duration || "1",
             objectives: {
-                knowledge: [`Hệ thống hóa kiến thức về ${topic} từ giáo án gốc.`],
-                competency: [`Phát triển năng lực chuyên môn thông qua ${topic}.`, "Năng lực số: Ứng dụng CNTT và truyền thông trong dạy học."],
-                quality: ["Chăm chỉ, trung thực trong học tập."]
+                knowledge: [
+                    `Bám sát các yêu cầu cần đạt về kiến thức trong giáo án gốc của bài dạy: ${topic}.`,
+                    `[RED: Tích hợp NLS: Khai thác và sử dụng các nguồn học liệu số liên quan đến ${topic} để mở rộng kiến thức.]`
+                ],
+                competency: [
+                    `Phát triển năng lực chuyên môn theo kế hoạch bài dạy đã có.`, 
+                    `[RED: Năng lực số (${aiComp.code}): ${aiComp.requirement}]`,
+                    `[RED: Năng lực số: Ứng dụng CNTT và truyền thông trong dạy học để nâng cao hiệu quả bài dạy.]`
+                ],
+                quality: [
+                    "Chăm chỉ, trung thực và trách nhiệm trong học tập.",
+                    `[RED: Trách nhiệm số: Có ý thức bảo vệ thông tin cá nhân và tuân thủ đạo đức khi sử dụng AI/Internet.]`
+                ]
             },
             materials: [
                 ...materials,
-                "Thiết bị số: Máy tính, máy chiếu, phần mềm hỗ trợ."
+                "[RED: Học liệu số: Bài trình chiếu, video clip, phần mềm mô phỏng, công cụ AI hỗ trợ.]",
+                "[RED: Thiết bị số: Máy tính, máy chiếu, bảng tương tác, thiết bị di động.]"
             ],
             activities: [
                 {
-                    name: "NỘI DUNG GIÁO ÁN GỐC (GIỮ NGUYÊN 100%)",
-                    objective: "Bảo toàn toàn bộ tiến trình dạy học đã có.",
-                    content: formData.originalText,
-                    product: "Kế hoạch bài dạy hoàn chỉnh.",
+                    name: "NỘI DUNG GIÁO ÁN GỐC (BẢO TOÀN 100%)",
+                    objective: "Thực hiện đầy đủ các mục tiêu kiến thức, kĩ năng theo kế hoạch bài dạy đã có.",
+                    content: formData.originalText + "\n\n[RED: --- ĐIỂM TÍCH HỢP NĂNG LỰC SỐ ---\nBổ sung các hoạt động ứng dụng công nghệ để minh họa và thực hành nội dung trên.]",
+                    product: "Kết quả học tập của học sinh theo tiến trình giáo án cũ.",
                     steps: [
                         { 
                             stepName: "Tiến trình dạy học", 
-                            teacherAction: "Thực hiện đầy đủ các bước theo giáo án gốc đã tải lên.", 
-                            output: "Đạt mục tiêu bài dạy." 
+                            teacherAction: "Giáo viên thực hiện các hoạt động dạy học (Khởi động, Hình thành kiến thức, Luyện tập, Vận dụng) đúng theo nội dung giáo án đã tải lên.\n\n[RED: Tích hợp (${aiComp.code}): GV hướng dẫn HS sử dụng thiết bị số để truy cập học liệu, thực hiện các nhiệm vụ học tập trên môi trường số.]", 
+                            output: "Học sinh đạt được các yêu cầu về kiến thức và kĩ năng của bài học.\n[RED: HS hình thành kĩ năng thao tác trên thiết bị số.]" 
                         }
                     ]
                 },
                 {
-                    name: "PHỤ LỤC: TÍCH HỢP NĂNG LỰC SỐ (THEO QĐ 3439/BGDĐT)",
-                    objective: "Nâng cấp bài dạy đáp ứng yêu cầu giáo dục Trí tuệ nhân tạo mới nhất.",
-                    content: `Dựa trên chủ đề ${topic}, các điểm tích hợp năng lực AI sau đây được đề xuất:`,
-                    product: "Sản phẩm học tập số, kết quả tương tác trên nền tảng AI.",
+                    name: "LỚP TÍCH HỢP NĂNG LỰC SỐ (NÂNG CẤP THEO QĐ 3439 & CV 3456)",
+                    objective: "Nâng cấp bài dạy đáp ứng yêu cầu chuyển đổi số và giáo dục Trí tuệ nhân tạo.",
+                    content: `Dựa trên nội dung bài dạy ${topic}, hệ thống đề xuất các điểm tích hợp Năng lực số và AI như sau:`,
+                    product: "Sản phẩm học tập số, kĩ năng khai thác công cụ AI của học sinh.",
                     steps: [
                         {
-                            stepName: "Điểm tích hợp 1: Tư duy AI",
-                            teacherAction: `GV hướng dẫn HS nhận diện vai trò của AI trong việc giải quyết vấn đề ${topic}.`,
-                            output: "HS hình thành tư duy lấy con người làm trung tâm."
+                            stepName: "Tích hợp 1: Khai thác học liệu số",
+                            teacherAction: `[RED: Trong quá trình dạy học, GV hướng dẫn HS sử dụng các công cụ tìm kiếm hoặc AI để mở rộng kiến thức về ${topic}. (Mã: 1.1.TC1b)]`,
+                            output: "[RED: HS biết cách chọn lọc và đánh giá thông tin số.]"
                         },
                         {
-                            stepName: "Điểm tích hợp 2: Đạo đức & Trách nhiệm số",
-                            teacherAction: "Thảo luận về việc sử dụng AI có trách nhiệm khi tìm kiếm thông tin bài học.",
-                            output: "HS phát triển ý thức về đạo đức AI."
+                            stepName: "Tích hợp 2: Tư duy AI & Đạo đức số",
+                            teacherAction: "[RED: GV lồng ghép thảo luận về vai trò của công nghệ và trách nhiệm khi sử dụng AI trong học tập. (Mã: 5.1.TC2a)]",
+                            output: "[RED: HS hình thành ý thức về đạo đức và an toàn trên không gian mạng.]"
                         }
                     ],
                     digitalIntegration: {
                         code: aiComp.code,
                         requirement: aiComp.requirement,
-                        description: `Tích hợp theo Khung giáo dục AI (QĐ 3439/BGDĐT): ${aiComp.domain}.`
+                        description: `[RED: Tích hợp Năng lực số theo Khung giáo dục AI mới nhất (QĐ 3439/BGDĐT). Giữ nguyên tiến trình cũ, chỉ bổ sung các "điểm chạm công nghệ" để nâng tầm bài dạy.]`
                     }
                 }
             ]

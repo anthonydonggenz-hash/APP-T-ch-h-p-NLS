@@ -12,29 +12,45 @@ interface Props {
 }
 
 const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'plans' | 'documents' | 'competencies'>('plans');
+  const [activeTab, setActiveTab] = useState<'plans' | 'documents' | 'competencies' | 'users'>('plans');
   const [plans, setPlans] = useState<LessonPlanRecord[]>([]);
+  const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [stats, setStats] = useState({
     totalPlans: 0,
     totalDocs: 0,
-    activeUsers: 142,
+    activeUsers: 0,
     avgScore: 92
   });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch Plans
+      const { data: plansData, error: plansError } = await supabase
         .from('lesson_plans')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setPlans(data || []);
-      setStats(prev => ({ ...prev, totalPlans: data?.length || 0 }));
+      if (plansError) throw plansError;
+      setPlans(plansData || []);
+
+      // Fetch Profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (profilesError) throw profilesError;
+      setProfiles(profilesData || []);
+
+      setStats(prev => ({ 
+        ...prev, 
+        totalPlans: plansData?.length || 0,
+        activeUsers: profilesData?.length || 0
+      }));
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -152,6 +168,12 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
           >
             <Layers size={18} /> <span className="text-sm font-medium">Khung Năng lực</span>
           </button>
+          <button 
+            onClick={() => setActiveTab('users')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'users' ? 'bg-gold-accent text-white shadow-lg shadow-gold-accent/20' : 'hover:bg-white/5'}`}
+          >
+            <Users size={18} /> <span className="text-sm font-medium">Quản lý Người dùng</span>
+          </button>
         </nav>
 
         <div className="p-4 border-t border-slate-800">
@@ -172,6 +194,7 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
             {activeTab === 'plans' && 'Danh sách Giáo án đã lưu'}
             {activeTab === 'documents' && 'Kho Tài liệu SGK'}
             {activeTab === 'competencies' && 'Quản lý Khung Năng lực Số'}
+            {activeTab === 'users' && 'Danh sách Người dùng đăng ký'}
           </h2>
           <div className="flex items-center gap-4">
             <button onClick={fetchData} className="p-2 text-slate-400 hover:text-gold-accent transition-colors">
@@ -231,66 +254,120 @@ const AdminDashboard: React.FC<Props> = ({ onLogout }) => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                    <th className="px-6 py-4">Tên bài dạy / Chủ đề</th>
-                    <th className="px-6 py-4">Môn học</th>
-                    <th className="px-6 py-4">Lớp</th>
-                    <th className="px-6 py-4">Ngày tạo</th>
-                    <th className="px-6 py-4">Trạng thái</th>
-                    <th className="px-6 py-4 text-right">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
-                        <RefreshCw className="mx-auto text-gold-accent animate-spin mb-2" size={24} />
-                        <p className="text-sm text-slate-400">Đang tải dữ liệu...</p>
-                      </td>
+              {activeTab === 'plans' ? (
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-4">Tên bài dạy / Chủ đề</th>
+                      <th className="px-6 py-4">Môn học</th>
+                      <th className="px-6 py-4">Lớp</th>
+                      <th className="px-6 py-4">Ngày tạo</th>
+                      <th className="px-6 py-4">Trạng thái</th>
+                      <th className="px-6 py-4 text-right">Thao tác</th>
                     </tr>
-                  ) : plans.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
-                        <p className="text-sm text-slate-400">Chưa có giáo án nào được lưu.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    plans.map((plan) => (
-                      <tr key={plan.id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-bold text-slate-800">{plan.topic}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">ID: #{plan.id}</p>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">{plan.subject}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600">Lớp {plan.grade}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <Clock size={12} /> {new Date(plan.created_at).toLocaleDateString('vi-VN')}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded uppercase">Đã lưu</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-2 text-slate-400 hover:text-gold-accent transition-colors">
-                              <ExternalLink size={16} />
-                            </button>
-                            <button 
-                              onClick={() => setConfirmDelete(plan.id)}
-                              className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <RefreshCw className="mx-auto text-gold-accent animate-spin mb-2" size={24} />
+                          <p className="text-sm text-slate-400">Đang tải dữ liệu...</p>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : plans.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <p className="text-sm text-slate-400">Chưa có giáo án nào được lưu.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      plans.map((plan) => (
+                        <tr key={plan.id} className="hover:bg-slate-50/50 transition-colors group">
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-bold text-slate-800">{plan.topic}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">ID: #{plan.id}</p>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{plan.subject}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">Lớp {plan.grade}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <Clock size={12} /> {new Date(plan.created_at).toLocaleDateString('vi-VN')}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded uppercase">Đã lưu</span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button className="p-2 text-slate-400 hover:text-gold-accent transition-colors">
+                                <ExternalLink size={16} />
+                              </button>
+                              <button 
+                                onClick={() => setConfirmDelete(plan.id)}
+                                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              ) : activeTab === 'users' ? (
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-4">Họ và tên</th>
+                      <th className="px-6 py-4">Email</th>
+                      <th className="px-6 py-4">Số điện thoại</th>
+                      <th className="px-6 py-4">Ngày đăng ký</th>
+                      <th className="px-6 py-4">Mong muốn</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <RefreshCw className="mx-auto text-gold-accent animate-spin mb-2" size={24} />
+                          <p className="text-sm text-slate-400">Đang tải dữ liệu...</p>
+                        </td>
+                      </tr>
+                    ) : profiles.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <p className="text-sm text-slate-400">Chưa có người dùng nào đăng ký.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      profiles.map((profile) => (
+                        <tr key={profile.id} className="hover:bg-slate-50/50 transition-colors group">
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-bold text-slate-800">{profile.full_name || 'Chưa cập nhật'}</p>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{profile.email}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{profile.phone || 'Chưa cập nhật'}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <Clock size={12} /> {new Date(profile.created_at).toLocaleDateString('vi-VN')}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-xs text-slate-500 max-w-xs truncate" title={profile.expectations}>
+                              {profile.expectations || 'Không có'}
+                            </p>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-12 text-center text-slate-400">
+                  Tính năng đang được phát triển...
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -3,23 +3,30 @@ import { ResultData } from "../types";
 export const renderWordHTML = (fullData: ResultData): string => {
   const data = fullData.lessonPlan;
   if (!data || !data.activities) return "";
+
+  const processText = (text: string) => {
+    if (!text) return "";
+    // Replace [RED: ...] with red span for Word
+    let processed = text.replace(/\[RED:\s*([\s\S]*?)\s*\]/g, '<span style="color: #ef4444; font-weight: bold;">$1</span>');
+    return processed.replace(/\n/g, '<br/>');
+  };
   
   const activitiesHtml = data.activities.map(act => {
       const digitalBlock = act.digitalIntegration ? `
         <div style="border: 1px solid #C5A021; background-color: #F9F6E5; padding: 10px; margin-top: 10px; font-size: 11pt; border-left: 4px solid #C5A021;">
            <b>[TÍCH HỢP NĂNG LỰC SỐ - 3456]</b><br/>
            <b>Mã tiêu chí:</b> ${act.digitalIntegration.code}<br/>
-           <b>Yêu cầu cần đạt:</b> ${act.digitalIntegration.requirement}<br/>
-           <b>Gợi ý triển khai:</b> ${act.digitalIntegration.description}
+           <b>Yêu cầu cần đạt:</b> ${processText(act.digitalIntegration.requirement)}<br/>
+           <b>Gợi ý triển khai:</b> ${processText(act.digitalIntegration.description)}
         </div>
       ` : '';
 
       return `
         <div style="margin-bottom: 20px;">
           <h4 style="font-weight: bold; background-color: #f2f2f2; padding: 5px; text-transform: uppercase;">${act.name}</h4>
-          <p><b>a) Mục tiêu:</b> ${act.objective}</p>
-          <p><b>b) Nội dung:</b><br/>${act.content.replace(/\n/g, '<br/>')}</p>
-          <p><b>c) Sản phẩm:</b> ${act.product.replace(/\n/g, '<br/>')}</p>
+          <p><b>a) Mục tiêu:</b> ${processText(act.objective)}</p>
+          <p><b>b) Nội dung:</b><br/>${processText(act.content)}</p>
+          <p><b>c) Sản phẩm:</b> ${processText(act.product)}</p>
           <p><b>d) Tổ chức thực hiện:</b></p>
           <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
             <thead>
@@ -33,9 +40,9 @@ export const renderWordHTML = (fullData: ResultData): string => {
                 <tr>
                   <td style="border: 1px solid black; padding: 5px;">
                     <div style="font-weight: bold; text-decoration: underline;">${step.stepName}</div>
-                    ${step.teacherAction.replace(/\n/g, '<br/>')}
+                    ${processText(step.teacherAction)}
                   </td>
-                  <td style="border: 1px solid black; padding: 5px;"><i>${step.output.replace(/\n/g, '<br/>')}</i></td>
+                  <td style="border: 1px solid black; padding: 5px;"><i>${processText(step.output)}</i></td>
                 </tr>
               `).join('')}
             </tbody>
@@ -59,12 +66,12 @@ export const renderWordHTML = (fullData: ResultData): string => {
     <p style="text-align: center;">Môn học: ${data.subject}; Lớp: ${data.grade}</p>
     
     <h3>I. MỤC TIÊU</h3>
-    <p><b>1. Về kiến thức:</b></p><ul>${data.objectives.knowledge.map(i => `<li>${i}</li>`).join('')}</ul>
-    <p><b>2. Về năng lực:</b></p><ul>${data.objectives.competency.map(i => `<li>${i}</li>`).join('')}</ul>
-    <p><b>3. Về phẩm chất:</b></p><ul>${data.objectives.quality.map(i => `<li>${i}</li>`).join('')}</ul>
+    <p><b>1. Về kiến thức:</b></p><ul>${data.objectives.knowledge.map(i => `<li>${processText(i)}</li>`).join('')}</ul>
+    <p><b>2. Về năng lực:</b></p><ul>${data.objectives.competency.map(i => `<li>${processText(i)}</li>`).join('')}</ul>
+    <p><b>3. Về phẩm chất:</b></p><ul>${data.objectives.quality.map(i => `<li>${processText(i)}</li>`).join('')}</ul>
 
     <h3>II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</h3>
-    <ul>${data.materials.map(i => `<li>${i}</li>`).join('')}</ul>
+    <ul>${data.materials.map(i => `<li>${processText(i)}</li>`).join('')}</ul>
 
     <h3>III. TIẾN TRÌNH DẠY HỌC</h3>
     ${activitiesHtml}

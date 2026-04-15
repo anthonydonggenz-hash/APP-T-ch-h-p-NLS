@@ -39,8 +39,13 @@ const LessonPlan5512View: React.FC<Props> = ({ fullData }) => {
             <Check size={14} /> Căn cứ: Khung năng lực số (Văn bản 3456/BGDĐT-GDPT)
         </p>
         {mode === 'integration' && (
-          <div className="inline-block mt-3 px-4 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold uppercase tracking-wider animate-pulse">
-            Chế độ: Tích hợp Năng lực số vào Giáo án gốc
+          <div className="flex flex-col items-center gap-2 mt-3">
+            <div className="inline-block px-4 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold uppercase tracking-wider animate-pulse">
+              Chế độ: Tích hợp Năng lực số vào Giáo án gốc
+            </div>
+            <div className="text-[10px] text-slate-500 font-sans flex items-center gap-1">
+               <Check size={10} className="text-green-600" /> Cam kết: Bảo toàn 100% nội dung SGK và tiến trình dạy học cũ
+            </div>
           </div>
         )}
       </div>

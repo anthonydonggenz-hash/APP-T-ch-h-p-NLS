@@ -39,8 +39,9 @@ const ContentRenderer: React.FC<Props> = ({ content }) => {
                   return part;
                 }
               } else {
-                 // Regular text: replace newlines with <br/>
-                 return part.replace(/\n/g, '<br/>');
+                 // Regular text: replace [RED: ...] with red span and newlines with <br/>
+                 let processed = part.replace(/\[RED:\s*([\s\S]*?)\s*\]/g, '<span style="color: #ef4444; font-weight: 600;">$1</span>');
+                 return processed.replace(/\n/g, '<br/>');
               }
             }).join('');
           }
